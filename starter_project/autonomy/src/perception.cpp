@@ -1,7 +1,11 @@
 #include "perception.hpp"
 
 // ROS Headers, ros namespace
+#include <opencv2/aruco.hpp>
+#include <opencv2/aruco/dictionary.hpp>
+#include <opencv2/core/types.hpp>
 #include <ros/init.h>
+#include <cmath>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "starter_project_perception"); // Our node name (See: http://wiki.ros.org/Nodes)
@@ -52,7 +56,7 @@ namespace mrover {
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
         tags.clear(); // Clear old tags in output vector
-
+        cv::aruco::detectMarkers(image, mTagDictionary, OutputArrayOfArrays corners, OutputArray ids)
         // TODO: implement me!
     }
 
@@ -69,14 +73,36 @@ namespace mrover {
         // hint: think about how you can use the "image" parameter
         // hint: this is an approximation that will be used later by navigation to stop "close enough" to a tag.
         // hint: try not overthink, this metric does not have to be perfectly accurate, just correlated to distance away from a tag
+        float tlX = tagCorners[0].x;
+        float tlY = tagCorners[0].y;
+
+        float trX = tagCorners[1].x;
+        float trY = tagCorners[1].y;
+
+        float distX = tlX - trX;
+        float distY = trY - trY;
+
+        float dist = std::sqrt(std::pow(distX, 2) + std::pow(distY, 2));
 
         // TODO: implement me!
-        return {};
+        return dist;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        return {};
+        float sumX = 0;
+        float sumY = 0;
+
+        for(cv::Point2f corner : tagCorners){
+            sumX += corner.x;
+            sumY += corner.y;
+        }
+
+        sumX /= 4;
+        sumY /= 4;
+
+        std::pair<float, float> center(sumX, sumY);
+        return center;
     }
 
 } // namespace mrover
