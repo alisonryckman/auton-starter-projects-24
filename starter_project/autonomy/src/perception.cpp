@@ -1,4 +1,5 @@
 #include "perception.hpp"
+#include "mrover/StarterProjectTag.h"
 
 // ROS Headers, ros namespace
 #include <opencv2/aruco.hpp>
@@ -56,7 +57,17 @@ namespace mrover {
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
         tags.clear(); // Clear old tags in output vector
-        cv::aruco::detectMarkers(image, mTagDictionary, OutputArrayOfArrays corners, OutputArray ids)
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+
+        //Get the number of tags in image
+        int numTagsDetected = mTagIds.size();
+
+        for(int i = 0; i < numTagsDetected; i++){
+            StarterProjectTag msg;
+            float closeness = getClosenessMetricFromTagCorners(mTagCorners[i]);
+            std::pair<float, float> j;
+        }
+
         // TODO: implement me!
     }
 
@@ -84,8 +95,10 @@ namespace mrover {
 
         float dist = std::sqrt(std::pow(distX, 2) + std::pow(distY, 2));
 
+        float metric = dist / image.rows;
+
         // TODO: implement me!
-        return dist;
+        return metric;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
