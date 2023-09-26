@@ -8,6 +8,7 @@ add_message_files(
         DIRECTORY
         ${CMAKE_CURRENT_LIST_DIR}/msg
         FILES
+        StarterProjectTag.msg
         #add new messages here
 )
 
