@@ -29,7 +29,7 @@ namespace mrover {
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
         // TODO: uncomment me!
         mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
-    
+
         mTagDetectorParams = cv::aruco::DetectorParameters::create();
         mTagDictionary = cv::aruco::getPredefinedDictionary(0);
     }
@@ -55,7 +55,7 @@ namespace mrover {
 
         tags.clear(); // Clear old tags in output vector
         cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds);
-        for (const auto & mTagCorner : mTagCorners) { 
+        for (const auto& mTagCorner: mTagCorners) {
             StarterProjectTag newTag;
             newTag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorner);
             newTag.xTagCenterPixel = getCenterFromTagCorners(mTagCorner).first;
@@ -66,7 +66,7 @@ namespace mrover {
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
         int closestTagIndex = 0;
-        for (int i=0; i<tags.size(); ++i) {
+        for (int i = 0; i < tags.size(); ++i) {
             if (tags[i].closenessMetric < tags[closestTagIndex].closenessMetric) {
                 closestTagIndex = i;
             }
@@ -82,25 +82,25 @@ namespace mrover {
         // hint: think about how you can use the "image" parameter
         // hint: this is an approximation that will be used later by navigation to stop "close enough" to a tag.
         // hint: try not overthink, this metric does not have to be perfectly accurate, just correlated to distance away from a tag
-        
+
         int imageWidth = image.rows;
         int imageHeight = image.cols;
-        float imageArea = (float)imageWidth*(float)imageHeight;
+        float imageArea = (float) imageWidth * (float) imageHeight;
 
-        float tagWidth = (tagCorners[3].x-tagCorners[2].x);
-        float tagHeight = (tagCorners[3].y-tagCorners[0].y);
-        float tagArea = tagWidth*tagHeight;
+        float tagWidth = (abs(tagCorners[3].x - tagCorners[2].x));
+        float tagHeight = (abs(tagCorners[3].y - tagCorners[0].y));
+        float tagArea = tagWidth * tagHeight;
 
-        float ratio = 1-(tagArea/imageArea);
+        float ratio = 1 - (tagArea / imageArea);
 
         return ratio;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
-        float width = tagCorners[3].x - tagCorners[2].x;
-        float height = tagCorners[3].y - tagCorners[0].y;
+        float width = (abs(tagCorners[3].x - tagCorners[2].x));
+        float height = (abs(tagCorners[3].y - tagCorners[0].y));
 
-        return {width/2, height/2};
+        return {width / 2, height / 2};
     }
 
 } // namespace mrover
