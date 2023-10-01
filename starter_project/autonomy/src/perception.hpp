@@ -94,7 +94,7 @@ namespace mrover {
          * @param tags          Vector of tags
          * @return              Center tag
          */
-        [[nodiscard]] StarterProjectTag selectTag(std::vector<StarterProjectTag> const& tags);
+        [[nodiscard]] StarterProjectTag selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags);
     };
 
 } // namespace mrover
