@@ -1,7 +1,11 @@
 #include "perception.hpp"
 
 // ROS Headers, ros namespace
+#include <arm_neon.h>
+#include <cstddef>
+#include <opencv2/aruco.hpp>
 #include <ros/init.h>
+#include <utility>
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "starter_project_perception"); // Our node name (See: http://wiki.ros.org/Nodes)
@@ -53,7 +57,19 @@ namespace mrover {
 
         tags.clear(); // Clear old tags in output vector
 
-        // TODO: implement me!
+        int tagId;
+        float xTagCenterPixel;
+        float yTagCenterPixel;
+        float closenessMetric;
+
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+
+        for (size_t i = 0; i < tags.size(); ++i) {
+            tags[i].tagId = mTagIds[i];
+            tags[i].xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first;
+            tags[i].yTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).second;
+            tags[i].closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
+        }
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
@@ -75,8 +91,15 @@ namespace mrover {
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
-        // TODO: implement me!
-        return {};
+        float x_center = 0;
+        float y_center = 0;
+
+        for (const cv::Point2f& corner : tagCorners) {
+            x_center += corner.x;
+            y_center += corner.y;
+        }
+
+        return std::make_pair(x_center / 4, y_center / 4);
     }
 
 } // namespace mrover
