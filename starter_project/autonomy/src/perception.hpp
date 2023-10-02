@@ -1,7 +1,9 @@
 #pragma once
 
 // C++ Standard Library Headers, std namespace
+#include <algorithm>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -52,9 +54,9 @@ namespace mrover {
          * Called when we receive a new image message from the camera.
          * Specifically this is one frame.
          *
-         * @param image
+         * @param message
          */
-        void imageCallback(sensor_msgs::ImageConstPtr const& image);
+        void imageCallback(sensor_msgs::ImageConstPtr const& message);
 
         /**
          *  Given an image, detect ArUco tags, and fill a vector full of output messages.
@@ -86,7 +88,7 @@ namespace mrover {
          * @param tagCorners    4-tuple of tag pixel coordinates representing the corners
          * @return              2-tuple (x,y) approximate center in pixel space
          */
-        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners);
+        [[nodiscard]] cv::Point2f getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners);
 
         /**
          *  Select the tag closest to the center of the camera
@@ -94,7 +96,7 @@ namespace mrover {
          * @param tags          Vector of tags
          * @return              Center tag
          */
-        [[nodiscard]] StarterProjectTag selectTag(std::vector<StarterProjectTag> const& tags);
+        [[nodiscard]] std::optional<StarterProjectTag> selectTag(cv::Size const& imageSize, std::vector<StarterProjectTag> const& tags);
     };
 
 } // namespace mrover
