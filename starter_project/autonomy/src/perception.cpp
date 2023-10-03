@@ -1,6 +1,8 @@
 #include "perception.hpp"
+#include "mrover/StarterProjectTag.h"
 
 // ROS Headers, ros namespace
+#include <opencv2/aruco.hpp>
 #include <ros/init.h>
 
 int main(int argc, char** argv) {
@@ -26,7 +28,7 @@ namespace mrover {
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
         // TODO: uncomment me!
-        // mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
+        mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
 
         mTagDetectorParams = cv::aruco::DetectorParameters::create();
         mTagDictionary = cv::aruco::getPredefinedDictionary(0);
@@ -54,15 +56,37 @@ namespace mrover {
         tags.clear(); // Clear old tags in output vector
 
         // TODO: implement me!
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+        for (int i = 0; i < static_cast<int>(mTagCorners.size()); i++) {
+            std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
+            StarterProjectTag tag;
+            tag.tagId = mTagIds[i];
+            // tag.xTagCenterPixel = center.first - static_cast<float>(image.cols) / 2;
+            tag.xTagCenterPixel = 45;
+            tag.yTagCenterPixel = center.second - static_cast<float>(image.rows) / 2;
+            tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
+            std::cout << tag.closenessMetric << tag.xTagCenterPixel << tag.yTagCenterPixel << '\n';
+            tags.push_back(tag);
+        }
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        return {};
+        float minDist = std::numeric_limits<float>::max();
+        StarterProjectTag selectedTag;
+        for (auto tag : tags) {
+            float currDist = tag.xTagCenterPixel * tag.xTagCenterPixel + tag.yTagCenterPixel * tag.yTagCenterPixel;
+            if (currDist < minDist) {
+                minDist = currDist;
+                selectedTag = tag;
+            }
+        }
+        return selectedTag;
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
         // TODO: implement me!
+        mTagPublisher.publish(tag);
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
@@ -71,12 +95,25 @@ namespace mrover {
         // hint: try not overthink, this metric does not have to be perfectly accurate, just correlated to distance away from a tag
 
         // TODO: implement me!
-        return {};
+        std::pair<float, float> topLeft, topRight, botLeft, botRight;
+        topLeft = std::make_pair(tagCorners[0].y, tagCorners[0].x);
+        topRight = std::make_pair(tagCorners[1].y, tagCorners[1].x);
+        botRight = std::make_pair(tagCorners[2].y, tagCorners[2].x);
+        botLeft = std::make_pair(tagCorners[3].y, tagCorners[3].x);
+
+        float top = (topRight.first - topLeft.first) * (topRight.first - topLeft.first) + (topRight.second - topLeft.second) * (topRight.second - topLeft.second);
+        float left = (botLeft.first - topLeft.first) * (botLeft.first - topLeft.first) + (botLeft.second - topLeft.second) * (botLeft.second - topLeft.second);
+        float bottom = (botRight.first - botLeft.first) * (botRight.first - botLeft.first) + (botRight.second - botRight.second) * (botRight.second - botRight.second);
+        float right = (botRight.first - topRight.first) * (botRight.first - topRight.first) + (botRight.second - topRight.second) * (botRight.second - topRight.second);
+
+        return top + left + bottom + right;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        return {};
+        float midVertical = (tagCorners[0].y + tagCorners[3].y) / 2;
+        float midHorizontal = (tagCorners[0].x + tagCorners[1].x) / 2;
+        return std::make_pair(midHorizontal, midVertical);
     }
 
 } // namespace mrover
