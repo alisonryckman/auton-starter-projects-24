@@ -62,10 +62,10 @@ namespace mrover {
             StarterProjectTag tag;
             tag.tagId = mTagIds[i];
             // tag.xTagCenterPixel = center.first - static_cast<float>(image.cols) / 2;
-            tag.xTagCenterPixel = 45;
+            tag.xTagCenterPixel = center.first - static_cast<float>(image.cols) / 2;
             tag.yTagCenterPixel = center.second - static_cast<float>(image.rows) / 2;
             tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
-            std::cout << tag.closenessMetric << tag.xTagCenterPixel << tag.yTagCenterPixel << '\n';
+            // std::cout << tag.closenessMetric << tag.xTagCenterPixel << tag.yTagCenterPixel << '\n';
             tags.push_back(tag);
         }
     }
@@ -101,19 +101,21 @@ namespace mrover {
         botRight = std::make_pair(tagCorners[2].y, tagCorners[2].x);
         botLeft = std::make_pair(tagCorners[3].y, tagCorners[3].x);
 
-        float top = (topRight.first - topLeft.first) * (topRight.first - topLeft.first) + (topRight.second - topLeft.second) * (topRight.second - topLeft.second);
-        float left = (botLeft.first - topLeft.first) * (botLeft.first - topLeft.first) + (botLeft.second - topLeft.second) * (botLeft.second - topLeft.second);
-        float bottom = (botRight.first - botLeft.first) * (botRight.first - botLeft.first) + (botRight.second - botRight.second) * (botRight.second - botRight.second);
-        float right = (botRight.first - topRight.first) * (botRight.first - topRight.first) + (botRight.second - topRight.second) * (botRight.second - topRight.second);
+        float top = sqrt((topRight.first - topLeft.first) * (topRight.first - topLeft.first) + (topRight.second - topLeft.second) * (topRight.second - topLeft.second));
+        float left = sqrt((botLeft.first - topLeft.first) * (botLeft.first - topLeft.first) + (botLeft.second - topLeft.second) * (botLeft.second - topLeft.second));
+        float bottom = sqrt((botRight.first - botLeft.first) * (botRight.first - botLeft.first) + (botRight.second - botRight.second) * (botRight.second - botRight.second));
+        float right = sqrt((botRight.first - topRight.first) * (botRight.first - topRight.first) + (botRight.second - topRight.second) * (botRight.second - topRight.second));
 
-        return top + left + bottom + right;
+        return (top + left + bottom + right) / ((static_cast<float>(image.rows) + static_cast<float>(image.cols)) * 2);
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        float midVertical = (tagCorners[0].y + tagCorners[3].y) / 2;
-        float midHorizontal = (tagCorners[0].x + tagCorners[1].x) / 2;
-        return std::make_pair(midHorizontal, midVertical);
+        float centerX = (tagCorners[0].x + tagCorners[1].x) / 2;
+        float centerY = (tagCorners[0].y + tagCorners[3].y) / 2;
+        ROS_INFO("%f %f %f %f", tagCorners[0].x, tagCorners[1].x, tagCorners[2].x, tagCorners[3].x);
+        ROS_INFO("%f %f %f %f", tagCorners[0].y, tagCorners[1].y, tagCorners[2].y, tagCorners[3].y);
+        return std::make_pair(centerX, centerY);
     }
 
 } // namespace mrover
