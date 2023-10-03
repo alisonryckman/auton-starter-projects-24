@@ -17,9 +17,16 @@ from util.SE3 import SE3
 class Localization:
     pose: SE3
 
+    gps_sub: rospy.Subscriber
+    imu_sub: rospy.Subscriber
+
+
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
+
+        self.gps_sub = rospy.Subscriber("/gps/fix", NavSatFix, self.gps_callback)
+        self.imu_sub = rospy.Subscriber("/imu/imu_only", Imu, self.imu_callback)
 
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
@@ -34,7 +41,17 @@ class Localization:
         convert it to cartesian coordinates, store that value in `self.pose`, then publish
         that pose to the TF tree.
         """
-        # TODO
+
+        latlong = np.array([msg.latitude, msg.longitude])
+        reference = np.array([42.293195, -83.7096706])
+
+        xyz = Localization.spherical_to_cartesian(latlong, reference)
+
+        self.pose = SE3.from_pos_quat(xyz.copy(), self.pose.rotation.quaternion.copy())
+
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
+
+
 
     def imu_callback(self, msg: Imu):
         """
@@ -42,7 +59,12 @@ class Localization:
         on the /imu topic. It should read the orientation data from the given Imu message,
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
-        # TODO
+
+        rot = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
+
+        self.pose = SE3.from_pos_quat(self.pose.position.copy(), rot.copy())
+
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -56,8 +78,12 @@ class Localization:
                                 given as a numpy array [latitude, longitude]
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
-        # TODO
+        R = 6371000 #CIRCUMF of earth
 
+        x = R*(np.radians(spherical_coord[1]) - np.radians(reference_coord[1])) * np.cos(np.radians(reference_coord[0]))
+        y = R*(np.radians(spherical_coord[0]) - np.radians(reference_coord[0]))
+
+        return np.array([x, y, 0]) # rotate by 90 degrees
 
 def main():
     # initialize the node

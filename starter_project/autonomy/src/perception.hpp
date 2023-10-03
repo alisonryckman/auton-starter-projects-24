@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <cmath>
+
 // OpenCV Headers, cv namespace
 #include <opencv2/aruco.hpp>
 #include <opencv2/core/mat.hpp>
@@ -17,6 +19,8 @@
 #include <ros/publisher.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
+
+#include <ros/console.h>
 
 #if __has_include(<mrover/StarterProjectTag.h>)
 #include <mrover/StarterProjectTag.h>
@@ -45,6 +49,9 @@ namespace mrover {
         std::vector<StarterProjectTag> mTags;
         ros::Publisher mTagPublisher;
 
+        size_t image_width;
+        size_t image_height;
+
     public:
         Perception();
 
@@ -55,6 +62,11 @@ namespace mrover {
          * @param image
          */
         void imageCallback(sensor_msgs::ImageConstPtr const& image);
+
+        /**
+        *   Dumbass helper I wrote to do center offset
+        */
+        // [[nodiscard]] double get_center_offset_magnitude_sq(float x, float y) const;
 
         /**
          *  Given an image, detect ArUco tags, and fill a vector full of output messages.
@@ -86,7 +98,7 @@ namespace mrover {
          * @param tagCorners    4-tuple of tag pixel coordinates representing the corners
          * @return              2-tuple (x,y) approximate center in pixel space
          */
-        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners);
+        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) const;
 
         /**
          *  Select the tag closest to the center of the camera
@@ -94,7 +106,7 @@ namespace mrover {
          * @param tags          Vector of tags
          * @return              Center tag
          */
-        [[nodiscard]] StarterProjectTag selectTag(std::vector<StarterProjectTag> const& tags);
+        [[nodiscard]] StarterProjectTag selectTag(std::vector<StarterProjectTag> const& tags) const;
     };
 
 } // namespace mrover
