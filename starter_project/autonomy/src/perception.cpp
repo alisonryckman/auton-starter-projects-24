@@ -26,7 +26,7 @@ namespace mrover {
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
         // TODO: uncomment me!
-        // mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
+        mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
 
         mTagDetectorParams = cv::aruco::DetectorParameters::create();
         mTagDictionary = cv::aruco::getPredefinedDictionary(0);
@@ -57,7 +57,7 @@ namespace mrover {
         for (int i = 0; i = mTagIds.size();++i){
             StarterProjectTag startertag;
             startertag.tagId = mTagIds[i];
-            startertag.xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first - image.columns/2;
+            startertag.xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first - image.cols/2;
             startertag.yTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).second - image.rows/2;
             startertag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
             tags.push_back(startertag);
@@ -67,18 +67,39 @@ namespace mrover {
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        for (int i = 0)
-            i = sqrt((x2-x1)^2 + (y2-y1)^2)- center;
-        
-           
-        
         return {};
+        if (!tags.empty()) {
+            if (tags.size() == 1) {
+                // If only one tag is seen, return it
+                return tags[0];
+            }
+            int minTagIndex = 0;
+            double minTagDist = sqrt(pow(tags[0].xTagCenterPixel, 2) + pow(tags[0].yTagCenterPixel, 2));
+            // For each tag seen, if its distance to the origin is less than that of the previous tags, it is now the selected tag
+            for (size_t i = 1; i < tags.size(); ++i) {
+                double currentTagDist = sqrt(pow(tags[i].xTagCenterPixel, 2) + pow(tags[i].yTagCenterPixel, 2));
+                if (currentTagDist < minTagDist) {
+                    minTagDist = currentTagDist;
+                    minTagIndex = i;
+                }
+            }
+            return tags[minTagIndex];
+
+        } else {
+            // If no tag is seen, return a tag with a false (-1) indicator
+            StarterProjectTag tag;
+            tag.tagId = -1;
+            return tag;
+        }
     }
+       
+    
     
     void Perception::publishTag(StarterProjectTag const& tag) {
         // TODO: implement me!
+        mTagPublisher.publish(tag);
     }
- 
+        
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // hint: think about how you can use the "image" parameter
         // hint: this is an approximation that will be used later by navigation to stop "close enough" to a tag.
@@ -101,5 +122,5 @@ namespace mrover {
         center.second = yavg;
         return center;
     }
-
-} // namespace mrover
+}
+ // namespace mrover
