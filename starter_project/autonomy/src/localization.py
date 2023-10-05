@@ -20,6 +20,8 @@ class Localization:
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
+        rospy.Subscriber("/gps/fix", NavSatFix, self.gps_callback)
+        rospy.Subscriber("/imu/imu_only", Imu, self.imu_callback)
 
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
@@ -28,6 +30,23 @@ class Localization:
         self.pose = SE3()
 
     def gps_callback(self, msg: NavSatFix):
+        # How do I grab this from the XML file
+
+        # rospy.loginfo(self.pose.position[0] + "0")
+        # rospy.loginfo(self.pose.position[1] + "1")
+        # rospy.loginfo(self.pose.position[2] + "2")
+
+        lat = msg.latitude
+        lon = msg.longitude
+        ref_lat = 42.293195
+        ref_lon = -83.7096706
+        sphere_coord = [lat, lon]
+        reference_coord = [ref_lat, ref_lon]
+
+        pos = Localization.spherical_to_cartesian(sphere_coord, reference_coord)
+        newPose = SE3(pos, self.pose.rotation)
+        self.pose = newPose
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
         """
         This function will be called every time this node receives a NavSatFix message
         on the /gps topic. It should read the GPS location from the given NavSatFix message,
@@ -37,6 +56,12 @@ class Localization:
         # TODO
 
     def imu_callback(self, msg: Imu):
+        newPose = SE3.from_pos_quat(
+            self.pose.position,
+            quaternion=np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]),
+        )
+        self.pose = newPose
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
         """
         This function will be called every time this node receives an Imu message
         on the /imu topic. It should read the orientation data from the given Imu message,
@@ -46,6 +71,13 @@ class Localization:
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
+        radius = 6371000
+        dLat = spherical_coord[0] - reference_coord[0]
+        dLon = spherical_coord[1] - reference_coord[1]
+        y = radius * dLat
+        x = radius * dLon * np.cos(reference_coord[0])
+        z = 0
+        return np.array([x, y, z])
         """
         This is a utility function that should convert spherical (latitude, longitude)
         coordinates into cartesian (x, y, z) coordinates using the specified reference point

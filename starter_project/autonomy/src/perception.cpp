@@ -31,7 +31,6 @@ namespace mrover {
         // Specifically the callback we passed will be invoked
         mImageSubscriber = mImageTransport.subscribe("camera/right/image", 1, &Perception::imageCallback, this);
 
-        ROS_ERROR("index counter %d \n", 1);
 
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
@@ -43,7 +42,6 @@ namespace mrover {
     }
 
     void Perception::imageCallback(sensor_msgs::ImageConstPtr const& image) {
-        ROS_INFO("index counter %d \n", 0);
         // Create a cv::Mat from the ROS image message
         // Note this does not copy the image data, it is basically a pointer
         // Be careful if you extend its lifetime beyond this function
@@ -63,7 +61,6 @@ namespace mrover {
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
         tags.clear(); // Clear old tags in output vector
         cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
-        ROS_INFO("index counter %d \n", 0);
         //Get the number of tags in image
         int numTagsDetected = mTagIds.size();
 
@@ -73,11 +70,10 @@ namespace mrover {
             float closeness = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
             std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
             msg.closenessMetric = closeness;
-            msg.xTagCenterPixel = center.first;
-            msg.yTagCenterPixel = center.second;
+            msg.xTagCenterPixel = (center.first - (float) image.cols / 2) / (float) image.cols;
+            msg.yTagCenterPixel = (center.second - (float) image.rows / 2) / (float) image.rows;
             msg.tagId = mTagIds[i];
             tags.push_back(msg);
-            ROS_INFO("index counter %d \n", i);
         }
         // TODO: implement me!
     }
@@ -123,7 +119,7 @@ namespace mrover {
         float dist = std::sqrt(std::pow(distX, 2) + std::pow(distY, 2));
 
         float metric = dist / (float) image.rows;
-
+        metric = -metric + 1;
         // TODO: implement me!
         return metric;
     }

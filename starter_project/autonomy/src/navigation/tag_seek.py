@@ -16,15 +16,17 @@ class TagSeekState(BaseState):
         DISTANCE_TOLERANCE = 0.99
         ANUGLAR_TOLERANCE = 0.3
         # TODO: get the tag's location and properties (HINT: use get_fid_data() from context.env)
-
+        tag = self.context.env.get_fid_data()
         # TODO: if we don't have a tag: go to the DoneState (with outcome "failure")
-
+        if tag is None:
+            return "failure"
         # TODO: if we are within angular and distance tolerances: go to DoneState (with outcome "success")
-
+        if tag.closenessMetric < DISTANCE_TOLERANCE and abs(tag.xTagCenterPixel) < ANUGLAR_TOLERANCE:
+            return "success"
         # TODO: figure out the Twist command to be applied to move the rover closer to the tag
-
+        tuple = self.context.get_drive_command(target, pose, 0.7, 0.2)
         # TODO: send Twist command to rover
 
         # TODO: stay in the TagSeekState (with outcome "working")
-
+        return "working"
         pass
