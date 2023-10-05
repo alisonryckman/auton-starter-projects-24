@@ -52,31 +52,54 @@ namespace mrover {
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
         tags.clear(); // Clear old tags in output vector
-
+        cv::aruco:: detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
         // TODO: implement me!
+        for (int i = 0; i = mTagIds.size();++i){
+            StarterProjectTag startertag;
+            startertag.tagId = mTagIds[i];
+            startertag.xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first - image.columns/2;
+            startertag.yTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).second - image.rows/2;
+            startertag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
+            tags.push_back(startertag);
+
+        }
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
+        for (int i = 0)
+            i = sqrt((x2-x1)^2 + (y2-y1)^2)- center;
+        
+           
+        
         return {};
     }
-
+    
     void Perception::publishTag(StarterProjectTag const& tag) {
         // TODO: implement me!
     }
-
+ 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // hint: think about how you can use the "image" parameter
         // hint: this is an approximation that will be used later by navigation to stop "close enough" to a tag.
         // hint: try not overthink, this metric does not have to be perfectly accurate, just correlated to distance away from a tag
+        float areaImage = image.rows * image.cols;
+        float areaAruco = abs(tagCorners[1].x - tagCorners[0].x )*abs(tagCorners[3].y - tagCorners[0].y);
+        float arucoMetric = 1 -(areaAruco/areaImage);
+    
 
         // TODO: implement me!
-        return {};
+        return arucoMetric;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        return {};
+        float xavg = (tagCorners[0].x + tagCorners[2].x)/2;
+        float yavg = (tagCorners[0].y + tagCorners[2].y)/2;
+        std::pair<float, float> center;
+        center.first = xavg;
+        center.second = yavg;
+        return center;
     }
 
 } // namespace mrover

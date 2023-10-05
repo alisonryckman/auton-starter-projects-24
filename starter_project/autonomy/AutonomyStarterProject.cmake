@@ -8,8 +8,8 @@ add_message_files(
         DIRECTORY
         ${CMAKE_CURRENT_LIST_DIR}/msg
         FILES
-        #add new messages here
-)
+        StarterProjectTag.msg
+        )
 
 # Collect all cpp files in the src subdirectory to be used for perception
 file(GLOB_RECURSE STARTER_PROJECT_PERCEPTION_SOURCES "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
