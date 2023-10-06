@@ -13,6 +13,8 @@ from sensor_msgs.msg import NavSatFix, Imu
 # SE3 library for handling poses and TF tree
 from util.SE3 import SE3
 
+import math
+
 
 class Localization:
     pose: SE3
@@ -38,6 +40,7 @@ class Localization:
 
         lat = msg.latitude
         lon = msg.longitude
+
         ref_lat = 42.293195
         ref_lon = -83.7096706
         sphere_coord = [lat, lon]
@@ -71,11 +74,13 @@ class Localization:
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
-        radius = 6371000
+        circumference = 6371000
         dLat = spherical_coord[0] - reference_coord[0]
         dLon = spherical_coord[1] - reference_coord[1]
-        y = radius * dLat
-        x = radius * dLon * np.cos(reference_coord[0])
+        y = circumference * dLat
+        x = circumference * dLon * np.cos(np.radians(reference_coord[0]))
+        rospy.loginfo(x)
+        rospy.loginfo(y)
         z = 0
         return np.array([x, y, z])
         """

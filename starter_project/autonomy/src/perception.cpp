@@ -79,6 +79,11 @@ namespace mrover {
     }
 
     StarterProjectTag Perception::selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
+        if (tags.empty()) {
+            StarterProjectTag msg;
+            msg.tagId = -1;
+            return msg;
+        }
         // TODO: implement me!
         int centerY = image.rows / 2;
         int centerX = image.cols / 2;
