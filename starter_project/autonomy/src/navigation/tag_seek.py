@@ -26,7 +26,7 @@ class TagSeekState(BaseState):
         # TODO: figure out the Twist command to be applied to move the rover closer to the tag
         command = Twist()
         command.angular.z = -tag.xTagCenterPixel
-        command.linear.x = 2 * (1 - tag.closenessMetric)
+        command.linear.x = 0.25 * tag.closenessMetric
         # TODO: send Twist command to rover
         self.context.rover.send_drive_command(command)
         # TODO: stay in the TagSeekState (with outcome "working")
