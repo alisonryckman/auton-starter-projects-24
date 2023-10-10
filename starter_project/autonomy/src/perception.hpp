@@ -86,7 +86,7 @@ namespace mrover {
          * @param tagCorners    4-tuple of tag pixel coordinates representing the corners
          * @return              2-tuple (x,y) approximate center in pixel space
          */
-        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners);
+        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners);
 
         /**
          *  Select the tag closest to the center of the camera
@@ -94,7 +94,7 @@ namespace mrover {
          * @param tags          Vector of tags
          * @return              Center tag
          */
-        [[nodiscard]] StarterProjectTag selectTag(std::vector<StarterProjectTag> const& tags);
+        [[nodiscard]] StarterProjectTag selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags);
     };
 
 } // namespace mrover
