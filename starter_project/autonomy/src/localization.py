@@ -74,13 +74,17 @@ class Localization:
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
-        circumference = 6371000
+        circumference = 63710 * 2
         dLat = spherical_coord[0] - reference_coord[0]
         dLon = spherical_coord[1] - reference_coord[1]
         y = circumference * dLat
         x = circumference * dLon * np.cos(np.radians(reference_coord[0]))
         rospy.loginfo(x)
+        rospy.loginfo("^X")
+
         rospy.loginfo(y)
+        rospy.loginfo("^Y")
+
         z = 0
         return np.array([x, y, z])
         """
