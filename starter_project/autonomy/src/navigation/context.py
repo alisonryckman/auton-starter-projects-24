@@ -17,16 +17,19 @@ class Rover:
     ctx: Context
 
     def get_pose(self) -> Optional[SE3]:
-        # TODO: return the pose of the rover (or None if we don't have one (catch exception))
-        pass
+        try:
+            pose = SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+        except:  # catch exceptions from SE3
+            return None  # if we get an exception, return none (pose doesn't exist)
+        else:  # otherwise, return the SE3 pose
+            return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
 
     def send_drive_command(self, twist: Twist):
-        # TODO: send the Twist message to the rover
-        pass
+        self.ctx.vel_cmd_publisher.publish(Twist)  # publish the twist using the publisher defined in Context
 
     def send_drive_stop(self):
-        # TODO: tell the rover to stop
-        pass
+        stopTwist = Twist()  # initializes to zero; could also do this directly in the send drive statement
+        self.send_drive_command(stopTwist)  # send zero twist using send_drive_command
 
 
 @dataclass
@@ -40,16 +43,18 @@ class Environment:
     fid_pos: Optional[StarterProjectTag]
 
     def receive_fid_data(self, message: StarterProjectTag):
-        # TODO: handle incoming FID data messages here
-        pass
+        self.fid_pos = StarterProjectTag
 
     def get_fid_data(self) -> Optional[StarterProjectTag]:
         """
         Retrieves the last received message regarding fid pose
         if it exists, otherwise returns None
         """
-        # TODO: return either None or your position message
-        pass
+        if StarterProjectTag.tagId == -1:  # recall that in perception.cpp,
+            # we defined an empty tag vector (no tags) as corresponding to a tag id of -1
+            return None
+        else:  # if the tag id isn't -1, it does exist and we should simply return it
+            return self.fid_pos
 
 
 class Context:

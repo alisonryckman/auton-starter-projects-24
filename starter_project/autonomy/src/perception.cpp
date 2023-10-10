@@ -65,24 +65,29 @@ namespace mrover {
         }
     }
 
-    StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) {         // NOLINT(*-convert-member-functions-to-static)
-        double minDist = sqrt(pow(tags[0].xTagCenterPixel, 2) + pow(tags[0].yTagCenterPixel, 2)); // we need an initial minimum to iterate against;
-                                                                                                  // let this be the first tag in the vector
+    StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
+        if (!tags.empty()) {
+            double minDist = sqrt(pow(tags[0].xTagCenterPixel, 2) + pow(tags[0].yTagCenterPixel, 2)); // we need an initial minimum to iterate against;
+                                                                                                      // let this be the first tag in the vector
 
-        double currDist;      // initialize current distance vector
-        int bestTagIndex = 0; // initialize best tag index variable
-        for (int i = 1; i < static_cast<int>(tags.size()); i++) {
+            double currDist;      // initialize current distance vector
+            int bestTagIndex = 0; // initialize best tag index variable
+            for (int i = 1; i < static_cast<int>(tags.size()); i++) {
 
-            currDist = sqrt(pow(tags[i].xTagCenterPixel, 2) + pow(tags[i].yTagCenterPixel, 2)); // compute euclidean distance to current tag center from middle of camera image
+                currDist = sqrt(pow(tags[i].xTagCenterPixel, 2) + pow(tags[i].yTagCenterPixel, 2)); // compute euclidean distance to current tag center from middle of camera image
 
-            // if our current tag's euclidean distance from the center of the camera view is less than the previous minimum distance, set it as the new minimum and update the best index
-            if (currDist < minDist) {
-                minDist = currDist;
-                bestTagIndex = i;
+                // if our current tag's euclidean distance from the center of the camera view is less than the previous minimum distance, set it as the new minimum and update the best index
+                if (currDist < minDist) {
+                    minDist = currDist;
+                    bestTagIndex = i;
+                }
             }
+            return tags[bestTagIndex];
+        } else {
+            StarterProjectTag emptyTag;
+            emptyTag.tagId = -1;
+            return emptyTag;
         }
-
-        return {tags[bestTagIndex]}; // use best index variable to return best tag
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {

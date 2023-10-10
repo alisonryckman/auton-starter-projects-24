@@ -9,22 +9,23 @@ class DriveState(BaseState):
     def __init__(self, context: Context):
         super().__init__(
             context,
-            # TODO:
-            add_outcomes=["TODO: add outcomes here"],
+            add_outcomes=["driving_to_point", "reached_point"],
         )
 
     def evaluate(self, ud):
         target = np.array([5.5, 2.0, 0.0])
 
-        # TODO: get the rover's pose, if it doesn't exist stay in DriveState (with outcome "driving_to_point")
+        roverPose = self.context.rover.get_pose  # get the rover pose
+        if roverPose == None:  # if the pose doesn't exist, stay in the drive state
+            return "driving_to_point"
 
-        # TODO: get the drive command and completion status based on target and pose
-        # (HINT: use get_drive_command(), with completion_thresh set to 0.7 and turn_in_place_thresh set to 0.2)
+        # compute new drive command and whether we're at our target
+        driveState = get_drive_command(target, roverPose, 0.7, 0.2)
 
-        # TODO: if we are finished getting to the target, go to TagSeekState (with outcome "reached_point")
-
-        # TODO: send the drive command to the rover
-
-        # TODO: tell smach to stay in the DriveState by returning with outcome "driving_to_point"
+        if driveState[1] == True:  # go to tag seek state, we've reached our target
+            return "reached_point"
+        else:  # we're not at our target yet, send new drive command to rover and stay in driving state
+            self.context.rover.send_drive_command(driveState[0])
+            return "driving_to_point"
 
         pass
