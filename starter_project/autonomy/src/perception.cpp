@@ -2,6 +2,7 @@
 
 // ROS Headers, ros namespace
 #include <arm_neon.h>
+#include <cmath>
 #include <cstddef>
 #include <opencv2/aruco.hpp>
 #include <ros/init.h>
@@ -86,8 +87,12 @@ namespace mrover {
         // hint: this is an approximation that will be used later by navigation to stop "close enough" to a tag.
         // hint: try not overthink, this metric does not have to be perfectly accurate, just correlated to distance away from a tag
 
-        // TODO: implement me!
-        return {};
+        int image_area = image.rows * image.cols;
+        float x_1 = (tagCorners[0].x + tagCorners[3].x) / 2, x_2 = (tagCorners[1].x + tagCorners[2].x) / 2;
+        float y_1 = (tagCorners[0].y + tagCorners[1].y) / 2, y_2 = (tagCorners[3].y + tagCorners[2].y) / 2;
+        float tag_area = abs(x_1 - x_2) * abs(y_1 - y_2);
+
+        return tag_area / (float) image_area;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
