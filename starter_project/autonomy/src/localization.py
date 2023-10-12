@@ -20,6 +20,8 @@ class Localization:
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
+        rospy.Subscriber("/gps/fix", NavSatFix, self.gps_callback)
+        rospy.Subscriber("/imu/imu_only", Imu, self.imu_callback)
 
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
@@ -36,6 +38,12 @@ class Localization:
         """
         # TODO
 
+        self.pose = self.spherical_to_cartesian(
+            np.ndarray([msg.latitude, msg.longitude]), np.ndarray([42.293195, -83.7096706])
+        )
+
+        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
+
     def imu_callback(self, msg: Imu):
         """
         This function will be called every time this node receives an Imu message
@@ -43,6 +51,10 @@ class Localization:
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
         # TODO
+
+        self.pose = SE3.from_pos_quat(self.pose.position, msg.orientation)
+
+        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -57,6 +69,25 @@ class Localization:
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
         # TODO
+
+        R = 6371000
+
+        spherical_coord = spherical_coord * (np.pi / 180)
+
+        reference_coord = reference_coord * (np.pi / 180)
+
+        y = R * (spherical_coord[1] - reference_coord[1]) * np.cos(reference_coord[0])
+
+        x = R * (spherical_coord[0] - reference_coord[0])
+
+        z = 0
+
+        # switch y and x
+
+        return np.ndarray([y, x, z])
+
+        #  refLat = 42.293195
+        # refLon = -83.7096706
 
 
 def main():
