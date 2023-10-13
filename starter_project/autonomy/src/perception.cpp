@@ -80,7 +80,7 @@ namespace mrover {
         float minn = 1000.0;
         StarterProjectTag ans = tags[0];
         for (int i = 0; i < tags.size(); i++) {
-            if (pow(tags[i].xTagCenterPixel, 2) - pow(tags[i].yTagCenterPixel, 2 < minn)) {
+            if (pow(tags[i].xTagCenterPixel, 2) - pow(tags[i].yTagCenterPixel, 2) < minn) {
                 minn = pow(tags[i].xTagCenterPixel, 2) - pow(tags[i].yTagCenterPixel, 2);
                 ans = tags[i];
             };

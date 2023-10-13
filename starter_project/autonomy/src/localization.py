@@ -13,6 +13,7 @@ from sensor_msgs.msg import NavSatFix, Imu
 
 # SE3 library for handling poses and TF tree
 from util.SE3 import SE3
+from util.SO3 import SO3
 
 
 class Localization:
@@ -37,8 +38,16 @@ class Localization:
         convert it to cartesian coordinates, store that value in `self.pose`, then publish
         that pose to the TF tree.
         """
-        # TODO
-        print(msg)
+        #TODO
+        #print(msg.latitude, msg.longitude)
+        referenceLat = 42.293195
+        referenceLong = -83.7096706
+
+        spherical = np.array([msg.latitude, msg.longitude])
+        ref = np.array([referenceLat, referenceLong])
+        x = Localization.spherical_to_cartesian(spherical, ref)
+        self.pose = SE3(position=x.copy(), rotation=self.pose.rotation)
+        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
 
     def imu_callback(self, msg: Imu):
         """
@@ -46,8 +55,10 @@ class Localization:
         on the /imu topic. It should read the orientation data from the given Imu message,
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
-        # TODO
-        print(msg)
+        y = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z,msg.orientation.w])
+        self.pose = SE3.from_pos_quat(position=self.pose.position, quaternion=y)
+        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
+        
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -61,17 +72,18 @@ class Localization:
                                 given as a numpy array [latitude, longitude]
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
-        # TODO
-        # rotate by 90 clockwise = (y,-x)
-        referenceLat = 42.293195
-        referenceLong = -83.7096706
+        #TODO
+        referenceLat = np.radians(reference_coord[0])
+        referenceLong = np.radians(reference_coord[1])
         crc = 6371000
         latDist = (
-            spherical_coord[0] - referenceLat
-        ) * crc  # converts horizontal dist from degrees to meter, this becomes the x coordinate
+            np.radians(spherical_coord[0]) - referenceLat
+        ) * np.radians(crc) # converts horizontal dist from degrees to meter, this becomes the x coordinate
+
         longDist = (
-            (spherical_coord[1] - referenceLong) * crc * (np.cos(referenceLat * (math.PI / 180)))
+            (np.radians(spherical_coord[1]) - referenceLong) * crc * (np.cos(referenceLat))
         )  # converts longitude distance to meters
+        return np.array([longDist, latDist, 0])
 
 
 def main():
