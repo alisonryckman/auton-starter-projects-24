@@ -62,7 +62,8 @@ class Navigation(threading.Thread):
 
 
 def main():
-    # TODO: init a node called "navigation"
+    # init a node called "navigation"
+    rospy.init_node("navigation")
 
     # context and navigation objects
     context = Context()

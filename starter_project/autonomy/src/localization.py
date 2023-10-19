@@ -88,18 +88,17 @@ class Localization:
         # radius of the earth
         R = 6371000
         # reference coordinates
-        refLat = reference_coord[0]
-        refLong = reference_coord[1]
+        refLat = np.radians(reference_coord[0])
+        refLong = np.radians(reference_coord[1])
         # GPS-sourcedlat/long
-        lat = spherical_coord[0]
-        long = spherical_coord[1]
+        lat = np.radians(spherical_coord[0])
+        long = np.radians(spherical_coord[1])
 
         # computing x and y locations using linearized data
         yBase = R * (long - refLong) * np.cos(np.radians(refLat))
         xBase = R * (lat - refLat)
-        # heading is 90 degrees, not zero, so straightforward change of basis (dircos matrix w/ theta = pi/2) to compute new x and y
-        # assumes that heading increases counterclockwise - is this accurate?
-        x = -yBase
+        # adjust due to heading
+        x = yBase
         y = xBase
         z = 0
         return [x, y, z]
