@@ -20,7 +20,8 @@ class Localization:
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
-
+        rospy.Subscriber("gps/fix", NavSatFix, self.gps_callback)
+        rospy.Subscriber("imu/imu_only", Imu, self.imu_callback)
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
 
@@ -29,12 +30,17 @@ class Localization:
 
     def gps_callback(self, msg: NavSatFix):
         """
-        This function will be called every time this node receives a NavSatFix message
+        This function will be called every time thgps_callback(s node receives a NavSatFix message
         on the /gps topic. It should read the GPS location from the given NavSatFix message,
         convert it to cartesian coordinates, store that value in `self.pose`, then publish
         that pose to the TF tree.
         """
         # TODO
+        ref = np.array([(42.293195), (-83.7096706)])
+        point = np.array([(msg.latitude), (msg.longitude)])
+        cartesian = self.spherical_to_cartesian(point, ref)
+        self.pose = SE3(cartesian, self.pose.rotation)
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     def imu_callback(self, msg: Imu):
         """
@@ -43,6 +49,10 @@ class Localization:
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
         # TODO
+        self.pose = SE3.from_pos_quat(
+            self.pose.position, np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
+        )
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -57,6 +67,15 @@ class Localization:
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
         # TODO
+        R = 6371000
+        y = R * (
+            np.radians(spherical_coord[1]) - np.radians(reference_coord[1]) * np.cos(np.radians(reference_coord[0]))
+        )
+        x = R * (np.radians(spherical_coord[0]) - np.radians(reference_coord[0]))
+        rospy.loginfo("x = %d", x)
+        rospy.loginfo("y = %d", y)
+        z = 0
+        return np.array([x, y, z])
 
 
 def main():

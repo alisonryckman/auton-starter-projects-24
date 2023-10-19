@@ -21,7 +21,7 @@ namespace mrover {
         // Subscribe to camera image messages
         // Every time another node publishes to this topic we will be notified
         // Specifically the callback we passed will be invoked
-        mImageSubscriber = mNodeHandle.subscribe("camera/right/image", 1, &Perception::imageCallback, this);
+        mImageSubscriber = mNodeHandle.subscribe("camera/left/image", 1, &Perception::imageCallback, this);
 
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
@@ -52,9 +52,9 @@ namespace mrover {
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
         tags.clear(); // Clear old tags in output vector
-        cv::aruco:: detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
         // TODO: implement me!
-        for (int i = 0; i = mTagIds.size();++i){
+        for (int i = 0; i < mTagIds.size();++i){
             StarterProjectTag startertag;
             startertag.tagId = mTagIds[i];
             startertag.xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first - image.cols/2;
@@ -67,7 +67,6 @@ namespace mrover {
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        return {};
         if (!tags.empty()) {
             if (tags.size() == 1) {
                 // If only one tag is seen, return it

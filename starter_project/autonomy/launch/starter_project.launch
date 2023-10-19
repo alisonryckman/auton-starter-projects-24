@@ -43,6 +43,6 @@
     Localization
     ============
   -->
-  <!-- <node name="localization" pkg="mrover" type="localization.py" output="screen" /> -->
+  <node name="localization" pkg="mrover" type="localization.py" output="screen" />
 
 </launch>
