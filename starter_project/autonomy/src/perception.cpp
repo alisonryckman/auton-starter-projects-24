@@ -1,6 +1,8 @@
 #include "perception.hpp"
+#include "mrover/StarterProjectTag.h"
 
 // ROS Headers, ros namespace
+#include <opencv2/aruco.hpp>
 #include <ros/init.h>
 
 int main(int argc, char** argv) {
@@ -26,7 +28,7 @@ namespace mrover {
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
         // TODO: uncomment me!
-        // mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
+        mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
 
         mTagDetectorParams = cv::aruco::DetectorParameters::create();
         mTagDictionary = cv::aruco::getPredefinedDictionary(0);
@@ -41,7 +43,7 @@ namespace mrover {
         // Detect tags in the image pixels
         findTagsInImage(cvImage, mTags);
         // Select the tag that is closest to the middle of the screen
-        StarterProjectTag tag = selectTag(mTags);
+        StarterProjectTag tag = selectTag(mTags, cvImage);
         // Publish the message to our topic so navigation or others can receive it
         publishTag(tag);
     }
@@ -54,15 +56,41 @@ namespace mrover {
         tags.clear(); // Clear old tags in output vector
 
         // TODO: implement me!
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds);
+        for (int i = 0; i < mTagCorners.size(); i++) {
+            std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
+            StarterProjectTag tag;
+            tag.tagId = mTagIds[i];
+            tag.xTagCenterPixel = (center.first - ((float)image.cols / 2.f)) / (float)image.cols;
+            tag.yTagCenterPixel = (center.second - (float)image.rows / 2.f) / (float)image.rows;
+            tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
+            tags.push_back(tag);
+        }
     }
 
-    StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
+    StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags, cv::Mat const& image) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        return {};
+        if (tags.empty()) {
+            StarterProjectTag tag;
+            tag.tagId = -1;
+            return tag;
+        }
+        std::pair<float, float> center = {image.cols / 2.0, image.rows / 2.0};
+        int closestInd = 0;
+        double minDist = sqrt(pow(tags[0].xTagCenterPixel - center.first, 2) + pow(tags[0].yTagCenterPixel - center.second, 2));
+        for (int i = 1; i < tags.size(); i++) {
+            double dist = sqrt(pow(tags[0].xTagCenterPixel - center.first, 2) + pow(tags[0].yTagCenterPixel - center.second, 2));
+            if (dist < minDist) {
+                closestInd = i;
+                minDist = dist;
+            }
+        }
+        return tags[closestInd];
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
         // TODO: implement me!
+        mTagPublisher.publish(tag);
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
@@ -70,13 +98,20 @@ namespace mrover {
         // hint: this is an approximation that will be used later by navigation to stop "close enough" to a tag.
         // hint: try not overthink, this metric does not have to be perfectly accurate, just correlated to distance away from a tag
 
-        // TODO: implement me!
-        return {};
+        // When the tag is close, it appears big - corners are far apart
+        // find the distance between the corners (pythagorean theorem)
+        float dist = sqrt((tagCorners[2].x - tagCorners[0].x) * (tagCorners[2].x - tagCorners[0].x) + 
+                          (tagCorners[2].y - tagCorners[0].y) * (tagCorners[2].y - tagCorners[0].y));
+        
+        auto screenDiagDist = (float)(sqrt(image.rows * image.rows + image.cols * image.cols));
+        // return 1 - dist/screenDiagDist;
+        return exp(-10 * dist / screenDiagDist);
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
-        // TODO: implement me!
-        return {};
+        float centerX = (tagCorners[0].x + tagCorners[1].x + tagCorners[2].x + tagCorners[3].x) / 4.0f;
+        float centerY = (tagCorners[0].y + tagCorners[1].y + tagCorners[2].y + tagCorners[3].y) / 4.0f;
+        return {centerX, centerY};
     }
 
 } // namespace mrover
