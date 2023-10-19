@@ -30,8 +30,7 @@ namespace mrover {
 
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
-        // TODO: uncomment me!
-        // mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
+        mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
 
         mTagDetectorParams = cv::aruco::DetectorParameters::create();
         mTagDictionary = cv::aruco::getPredefinedDictionary(0);
@@ -67,19 +66,29 @@ namespace mrover {
 
         for (size_t i = 0; i < tags.size(); ++i) {
             tags[i].tagId = mTagIds[i];
-            tags[i].xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first;
-            tags[i].yTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).second;
+            tags[i].xTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).first - static_cast<float>(image.rows) / 2;
+            tags[i].yTagCenterPixel = getCenterFromTagCorners(mTagCorners[i]).second - static_cast<float>(image.cols) / 2;
             tags[i].closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
         }
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
-        // TODO: implement me!
-        return {};
+        float nearest = std::numeric_limits<float>::max();
+        const StarterProjectTag* selected = nullptr;
+        for (auto& tag: tags) {
+            float squared_dist = tag.xTagCenterPixel * tag.xTagCenterPixel + tag.yTagCenterPixel * tag.yTagCenterPixel;
+            
+            if (squared_dist < nearest) {
+                nearest = squared_dist;
+                selected = &tag;
+            }
+        }
+
+        return *selected;
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
-        // TODO: implement me!
+        mTagPublisher.publish(tag);
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
@@ -92,7 +101,7 @@ namespace mrover {
         float y_1 = (tagCorners[0].y + tagCorners[1].y) / 2, y_2 = (tagCorners[3].y + tagCorners[2].y) / 2;
         float tag_area = abs(x_1 - x_2) * abs(y_1 - y_2);
 
-        return tag_area / (float) image_area;
+        return tag_area / static_cast<float>(image_area);
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
