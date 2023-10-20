@@ -13,11 +13,11 @@ class DriveState(BaseState):
             add_outcomes=["driving_to_point", "reached_point"],
         )
 
-#function get_drive_command() imported from drive.py that 
-# you can use to do some of the math in this step for you. 
+    # function get_drive_command() imported from drive.py that
+    # you can use to do some of the math in this step for you.
 
-#The function should return a string "outcome" depending on what state it needs to transition to next.
-#need to add those outcomes to the add_outcomes parameter that is passed to the parent constructor.
+    # The function should return a string "outcome" depending on what state it needs to transition to next.
+    # need to add those outcomes to the add_outcomes parameter that is passed to the parent constructor.
 
     def evaluate(self, ud):
         target = np.array([5.5, 2.0, 0.0])
@@ -35,4 +35,3 @@ class DriveState(BaseState):
         self.context.rover.send_drive_command(drive_effort[0])
         # TODO: tell smach to stay in the DriveState by returning with outcome "driving_to_point"
         return "driving_to_point"
-        

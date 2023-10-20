@@ -38,8 +38,8 @@ class Localization:
         convert it to cartesian coordinates, store that value in `self.pose`, then publish
         that pose to the TF tree.
         """
-        #TODO
-        #print(msg.latitude, msg.longitude)
+        # TODO
+        # print(msg.latitude, msg.longitude)
         referenceLat = 42.293195
         referenceLong = -83.7096706
 
@@ -55,10 +55,9 @@ class Localization:
         on the /imu topic. It should read the orientation data from the given Imu message,
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
-        y = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z,msg.orientation.w])
+        y = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
         self.pose = SE3.from_pos_quat(position=self.pose.position, quaternion=y)
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
-        
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -72,16 +71,16 @@ class Localization:
                                 given as a numpy array [latitude, longitude]
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
-        #TODO
+        # TODO
         referenceLat = np.radians(reference_coord[0])
         referenceLong = np.radians(reference_coord[1])
         crc = 6371000
-        latDist = (
-            crc * (np.radians(spherical_coord[0]) - referenceLat)
-        ) # converts horizontal dist from degrees to meter, this becomes the x coordinate
+        latDist = crc * (
+            np.radians(spherical_coord[0]) - referenceLat
+        )  # converts horizontal dist from degrees to meter, this becomes the x coordinate
 
-        longDist = (
-            crc * np.radians(spherical_coord[1]) - referenceLong) * (np.cos(referenceLat)
+        longDist = (crc * np.radians(spherical_coord[1]) - referenceLong) * (
+            np.cos(referenceLat)
         )  # converts longitude distance to meters
         return np.array([longDist, latDist, 0])
 

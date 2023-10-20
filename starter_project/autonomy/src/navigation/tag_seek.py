@@ -19,7 +19,7 @@ class TagSeekState(BaseState):
         dist = self.context.env.get_fid_data().closenessMetric
         x_coor = self.context.env.get_fid_data().xTagCenterPixel
         y_coor = self.context.env.get_fid_data().yTagCenterPixel
-        
+
         # TODO: if we don't have a tag: go to the DoneState (with outcome "failure")
         if self.context.env.get_fid_data() is None:
             return "failure"

@@ -81,7 +81,7 @@ namespace mrover {
         /**
          *  Given an ArUco tag in pixel space, find the approximate center in pixel space
          *
-         * @param tagCorners    4-tuple of tag pixel coordinates representing the corners
+         * @param tagCorners    4-tuple of tag pixel coordinates representing the corners 
          * @return              2-tuple (x,y) approximate center in pixel space
          */
         [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners);

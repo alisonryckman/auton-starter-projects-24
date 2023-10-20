@@ -1,4 +1,5 @@
 <launch>
+<<<<<<< HEAD
   <arg name="gui" default="false" />
   <param name="robot_description" command="xacro $(find mrover)/urdf/rover/rover.urdf.xacro" />
   <arg name="rvizconfig"
@@ -12,6 +13,28 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
+=======
+  <arg name="model" default="$(find mrover)/rover_description/rover.urdf" />
+  <arg name="gui"
+    default="false" />
+  <param name="robot_description"
+    command="xacro $(find mrover)/rover_description/rover.xacro" />
+  <arg name="rvizconfig"
+    default="$(find mrover)/starter_project/autonomy/config/starter_project.rviz" />
+  <node
+    name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+  <node
+    if="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher_gui"
+    type="joint_state_publisher_gui" />
+  <node unless="$(arg gui)" name="joint_state_publisher"
+    pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher"
+    pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <include
+    file="$(find gazebo_ros)/launch/empty_world.launch">
+>>>>>>> refs/remotes/starter/dllliu
     <env name="GAZEBO_MODEL_PATH"
       value="$(find mrover)/config/gazebo/env_description:$(find mrover)/starter_project/autonomy/config" />
     <arg name="world_name"
@@ -23,9 +46,14 @@
     <arg name="debug" value="false" />
     <arg name="verbose" default="false" />
     <arg name="gui_required" value="true" />
+<<<<<<< HEAD
   </include>
 
   <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+=======
+  </include> starter_project/ <node name="spawn_model"
+    pkg="gazebo_ros" type="spawn_model" output="screen"
+>>>>>>> refs/remotes/starter/dllliu
     args="
     -urdf -param robot_description
     -model rover" />
@@ -35,20 +63,38 @@
     Perception
     ==========
   -->
+<<<<<<< HEAD
   <node name="starter_project_perception" pkg="mrover" type="starter_project_perception" />
+=======
+
+  
+  <node
+    name="starter_project_perception" pkg="mrover" type="starter_project_perception" />
+>>>>>>> refs/remotes/starter/dllliu
 
   <!--
     ===========
     Navigation
     ===========
   -->
+<<<<<<< HEAD
   <!-- <node name="nav" pkg="mrover" type="navigation_starter_project.py" /> -->
+=======
+
+  <!-- <node
+    name="nav" pkg="mrover" type="navigation_starter_project.py" /> -->
+>>>>>>> refs/remotes/starter/dllliu
 
   <!--
     ============
     Localization
     ============
   -->
+<<<<<<< HEAD
   <node name="localization" pkg="mrover" type="localization.py" output="screen" />
+=======
+  <node
+    name="localization" pkg="mrover" type="localization.py" output="screen" />
+>>>>>>> refs/remotes/starter/dllliu
 
 </launch>

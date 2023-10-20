@@ -1,10 +1,17 @@
 #include "perception.hpp"
 #include "mrover/StarterProjectTag.h"
+#include <opencv2/core/types.hpp>
+<<<<<<< HEAD
+=======
+#include "ros/param.h"
+        >>>>>>> refs/remotes/starter/dllliu
 
 // ROS Headers, ros namespace
 #include <ros/init.h>
+#include <vector>
 
-int main(int argc, char** argv) {
+        int
+        main(int argc, char** argv) {
     ros::init(argc, argv, "starter_project_perception"); // Our node name (See: http://wiki.ros.org/Nodes)
 
     [[maybe_unused]] mrover::Perception perception;
@@ -49,10 +56,14 @@ namespace mrover {
 
     void Perception::findTagsInImage(cv::Mat const& image, std::vector<StarterProjectTag>& tags) { // NOLINT(*-convert-member-functions-to-static)
         // hint: take a look at OpenCV's documentation for the detectMarkers function
+
+
         // hint: you have mTagDictionary, mTagCorners, mTagIds, and mTagDetectorParams member variables already defined!
+
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
         tags.clear(); // Clear old tags in output vector
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
 
         cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
 
@@ -116,9 +127,14 @@ namespace mrover {
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        float width = abs(tagCorners[1].x - tagCorners[0].x);
-        float height = abs(tagCorners[2].y - tagCorners[1].y);
-        return {width / 2, height / 2};
+        int xsum = 0;
+        int ysum = 0;
+        for (cv::Point2f corner: tagCorners) {
+            xsum += corner.x;
+            ysum += corner.y;
+        }
+        std::pair<float, float> center(xsum, ysum);
+        return center;
     }
 
 } // namespace mrover
