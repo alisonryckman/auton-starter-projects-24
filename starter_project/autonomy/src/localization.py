@@ -65,21 +65,24 @@ class Localization:
                                 given as a numpy array [latitude, longitude]
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
-        converted_coords = np.array([0, 0, 0])
+        converted_coords = np.array([0.0, 0.0, 0.0])
 
-        #Latitude
-        distance = np.radians(spherical_coord[1]) - np.radians(reference_coord[1])
+        # Latitude
+        distance = np.radians(spherical_coord[0]) - np.radians(reference_coord[0])
         conversion = distance * (6371000)
         converted_coords[0] = conversion
         # Longitude
         distance = np.radians(spherical_coord[1]) - np.radians(reference_coord[1])
         conversion = distance * (6371000)
-        conversion = conversion * np.cos(reference_coord[1])
+        conversion = conversion * np.cos(reference_coord[0])
         converted_coords[1] = conversion
         # z-axis
         converted_coords[2] = 0
 
         # rospy.loginfo("Converted Coordinates: %d", converted_coords)
+        temp = converted_coords[0]
+        converted_coords[0] = converted_coords[1]
+        converted_coords[1] = temp
         return converted_coords
 
 
