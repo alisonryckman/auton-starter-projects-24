@@ -39,7 +39,7 @@ class Localization:
         spherical_coord = np.array([msg.latitude, msg.longitude])
         reference_coord = np.array([42.293195, -83.7096706])
         converted_coords = self.spherical_to_cartesian(spherical_coord, reference_coord)
-        self.pose = SE3.from_pos_quat(converted_coords.copy(), self.pose.rotation.quaternion)
+        self.pose = SE3(converted_coords, self.pose.rotation)
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
 
@@ -74,7 +74,7 @@ class Localization:
         # Longitude
         distance = np.radians(spherical_coord[1]) - np.radians(reference_coord[1])
         conversion = distance * (6371000)
-        conversion = conversion * np.cos(reference_coord[0])
+        conversion = conversion * np.cos(np.radians(reference_coord[0]))
         converted_coords[1] = conversion
         # z-axis
         converted_coords[2] = 0
