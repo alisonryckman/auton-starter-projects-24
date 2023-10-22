@@ -58,16 +58,19 @@ namespace mrover {
         for (const auto& mTagCorner: mTagCorners) {
             StarterProjectTag newTag;
             newTag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorner);
-            newTag.xTagCenterPixel = getCenterFromTagCorners(mTagCorner).first;
-            newTag.yTagCenterPixel = getCenterFromTagCorners(mTagCorner).second;
+            newTag.xTagCenterPixel = (getCenterFromTagCorners(mTagCorner).first - image.cols/2) / image.cols;
+            newTag.yTagCenterPixel = (getCenterFromTagCorners(mTagCorner).second - image.rows/2) / image.rows;
             tags.push_back(newTag);
         }
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
         int closestTagIndex = 0;
+        double min_distance_to_center = std::numeric_limits<double>::infinity();
         for (int i = 0; i < tags.size(); ++i) {
-            if (tags[i].closenessMetric < tags[closestTagIndex].closenessMetric) {
+            double distance_to_center = sqrt(pow(tags[i].xTagCenterPixel, 2) + pow(tags[i].yTagCenterPixel, 2));
+            if (distance_to_center < min_distance_to_center) {
+                min_distance_to_center = distance_to_center;
                 closestTagIndex = i;
             }
         }
