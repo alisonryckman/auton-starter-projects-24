@@ -56,27 +56,33 @@ namespace mrover {
         cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds);
         for (int i = 0; i < mTagIds.size(); i++) {
             StarterProjectTag tag;
-            std::pair<float, float> tagCenterCoord = getCenterFromTagCorners(mTagCorners[i]);
+            std::pair<float, float> tagCenterCoord = getCenterFromTagCorners(mTagCorners.at(i));
             tag.tagId = mTagIds[i];
-            tag.xTagCenterPixel = tagCenterCoord.first - (float(image.cols) / 2);
-            tag.yTagCenterPixel = (-1) * (tagCenterCoord.second - (float(image.rows) / 2));
-            tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
+            tag.xTagCenterPixel = (tagCenterCoord.first - (float(image.cols) / 2)) / ((float) image.cols / 2);
+            tag.yTagCenterPixel = (-1) * (tagCenterCoord.second - (float(image.rows) / 2)) / ((float) image.rows / 2);
+            tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners.at(i));
             tags.push_back(tag);
         }
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) { // NOLINT(*-convert-member-functions-to-static)
+        if (tags.empty()) {
+            StarterProjectTag result;
+            result.tagId = -1;
+            return result;
+        }
+
         int indexOfClosest = 0;
-        double closestDistance = sqrt(pow(tags[0].xTagCenterPixel, 2) + pow(tags[0].yTagCenterPixel, 2));
+        double closestDistance = sqrt(pow(tags.at(0).xTagCenterPixel, 2) + pow(tags.at(0).yTagCenterPixel, 2));
 
         for (int i = 1; i < tags.size(); i++) {
-            double tagDistance = sqrt(pow(tags[i].xTagCenterPixel, 2) + pow(tags[i].yTagCenterPixel, 2));
+            double tagDistance = sqrt(pow(tags.at(i).xTagCenterPixel, 2) + pow(tags.at(i).yTagCenterPixel, 2));
             if (tagDistance < closestDistance) {
                 indexOfClosest = i;
                 closestDistance = tagDistance;
             }
         }
-        return tags[indexOfClosest];
+        return tags.at(indexOfClosest);
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
@@ -84,15 +90,15 @@ namespace mrover {
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
-        float tagArea = (tagCorners[1].x - tagCorners[0].x) * (tagCorners[3].y - tagCorners[0].y);
+        float tagArea = (tagCorners.at(1).x - tagCorners.at(0).x) * (tagCorners.at(3).y - tagCorners.at(0).y);
         float imgArea = (float) image.rows * (float) image.cols;
         float closenessMetric = 1 - (log2((tagArea + 1) / imgArea)) / log2(1 / imgArea);
         return closenessMetric;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
-        float xCenterCoord = (float(tagCorners[0].x + tagCorners[1].x)) / 2;
-        float yCenterCoord = (float(tagCorners[0].y + tagCorners[3].y)) / 2;
+        float xCenterCoord = (float(tagCorners.at(0).x + tagCorners.at(1).x)) / 2;
+        float yCenterCoord = (float(tagCorners.at(0).y + tagCorners.at(3).y)) / 2;
         return {xCenterCoord, yCenterCoord};
     }
 
