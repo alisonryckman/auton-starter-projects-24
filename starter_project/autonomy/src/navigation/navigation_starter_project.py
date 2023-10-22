@@ -30,7 +30,11 @@ class Navigation(threading.Thread):
         self.sis.start()
         with self.state_machine:
             # TODO: add DriveState and its transitions here
-
+            self.state_machine.add(
+                "DriveState",
+                DriveState(self.context),
+                transitions={"drive": "DriveState"},
+            )
             # DoneState and its transitions
             self.state_machine.add(
                 "DoneState",
@@ -38,6 +42,11 @@ class Navigation(threading.Thread):
                 transitions={"done": "DoneState"},
             )
             # TODO: add TagSeekState and its transitions here
+            self.state_machine.add(
+                "TagSeekState",
+                TagSeekState(self.context),
+                transitions={"working": "TagSeekState"},
+            )
 
     def run(self):
         self.state_machine.execute()
