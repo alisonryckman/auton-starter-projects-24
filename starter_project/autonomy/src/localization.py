@@ -22,8 +22,8 @@ class Localization:
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
-        rospy.Subscriber("/gps/fix", NavSatFix, self.gps_callback)
-        rospy.Subscriber("/imu/imu_only", Imu, self.imu_callback)
+        rospy.Subscriber("gps/fix", NavSatFix, self.gps_callback)
+        rospy.Subscriber("imu/imu_only", Imu, self.imu_callback)
 
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
@@ -46,8 +46,9 @@ class Localization:
         spherical = np.array([msg.latitude, msg.longitude])
         ref = np.array([referenceLat, referenceLong])
         x = Localization.spherical_to_cartesian(spherical, ref)
-        self.pose = SE3(position=x.copy(), rotation=self.pose.rotation)
-        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
+        newX = SE3(x, self.pose.rotation)
+        self.pose = newX
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     def imu_callback(self, msg: Imu):
         """
@@ -55,8 +56,11 @@ class Localization:
         on the /imu topic. It should read the orientation data from the given Imu message,
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
-        y = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
-        self.pose = SE3.from_pos_quat(position=self.pose.position, quaternion=y)
+        newPose = SE3.from_pos_quat(
+            self.pose.position,
+            quaternion=np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]),
+        )
+        self.pose = newPose
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     @staticmethod
@@ -72,17 +76,15 @@ class Localization:
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
         # TODO
-        referenceLat = np.radians(reference_coord[0])
-        referenceLong = np.radians(reference_coord[1])
         crc = 6371000
-        latDist = crc * (
-            np.radians(spherical_coord[0]) - referenceLat
-        )  # converts horizontal dist from degrees to meter, this becomes the x coordinate
-
-        longDist = (crc * np.radians(spherical_coord[1]) - referenceLong) * (
-            np.cos(referenceLat)
-        )  # converts longitude distance to meters
-        return np.array([longDist, latDist, 0])
+        longDist = (
+            crc
+            * (np.radians(spherical_coord[1]) - np.radians(reference_coord[1]))
+            * np.cos(np.radians(reference_coord[0]))
+        )
+        latDist = crc * (np.radians(spherical_coord[0]) - np.radians(reference_coord[0]))
+        z = 0
+        return np.array([longDist, latDist, z])
 
 
 def main():

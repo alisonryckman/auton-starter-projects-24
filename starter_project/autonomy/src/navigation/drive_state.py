@@ -3,6 +3,7 @@ import numpy as np
 from context import Context
 from drive import get_drive_command
 from state import BaseState
+import rospy
 
 
 class DriveState(BaseState):
@@ -23,8 +24,10 @@ class DriveState(BaseState):
         target = np.array([5.5, 2.0, 0.0])
         # TODO: get the rover's pose, if it doesn't exist stay in DriveState (with outcome "driving_to_point")
         roverPose = self.context.rover.get_pose()
+        print(roverPose)
         if roverPose is None:
             return "driving_to_point"
+        rospy.loginfo(roverPose.position[0])
         # TODO: get the drive command and completion status based on target and pose
         # (HINT: use get_drive_command(), with completion_thresh set to 0.7 and turn_in_place_thresh set to 0.2)
         drive_effort = get_drive_command(target, roverPose, 0.7, 0.2)
