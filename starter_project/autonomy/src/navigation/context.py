@@ -18,15 +18,13 @@ class Rover:
 
     def get_pose(self) -> Optional[SE3]:
         try:
-            SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+            rover_pose = SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+            return rover_pose
         except tf2_ros.LookupException:
-            print("llokuo")
             return None
         except tf2_ros.ConnectivityException:
-            print("connectivity")
             return None
         except tf2_ros.ExtrapolationException:
-            print("extrap")
             return None
 
     def send_drive_command(self, twist: Twist):

@@ -17,12 +17,11 @@ class DriveState(BaseState):
 
         pose = self.context.rover.get_pose()
 
-        print(pose)
         if pose == None:
             return "driving_to_point"
 
-        drive_command, done, done = get_drive_command(target, pose, 0.7, 0.2)
-        print(drive_command)
+        drive_command, done = get_drive_command(target, pose, 0.7, 0.2)
+
         if done:
             return "reached_point"
 
