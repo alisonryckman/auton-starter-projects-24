@@ -63,8 +63,8 @@ namespace mrover {
             // Express each tag center to be relative to the center of the image
             // This is to make calculating the center tag in selectTag possible and it makes navigation easier down the line
             // Ask an auton lead if you have questions about this!
-            tag.xTagCenterPixel = (center.first - image.cols/2) / image.cols;
-            tag.yTagCenterPixel =  (center.second - image.rows/2) / image.rows;
+            tag.xTagCenterPixel = (center.first - float(image.cols) / 2) / float(image.cols);
+            tag.yTagCenterPixel = (center.second - float(image.rows) / 2) / float(image.rows);
             tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
             mTags.push_back(tag);
         }
@@ -80,7 +80,7 @@ namespace mrover {
             int minTagIndex = 0;
             double minTagDist = sqrt(pow(tags[0].xTagCenterPixel, 2) + pow(tags[0].yTagCenterPixel, 2));
             // For each tag seen, if its distance to the origin is less than that of the previous tags, it is now the selected tag
-            for (size_t i = 1; i < tags.size(); ++i) {
+            for (int i = 1; i < tags.size(); ++i) {
                 double currentTagDist = sqrt(pow(tags[i].xTagCenterPixel, 2) + pow(tags[i].yTagCenterPixel, 2));
                 if (currentTagDist < minTagDist) {
                     minTagDist = currentTagDist;
@@ -111,7 +111,7 @@ namespace mrover {
 
         // Find three of the corners to calculate the area of the tag from
         // We are assuming the tag is a square
-        float imageSize = image.cols * image.rows;
+        float imageSize = float(image.cols) * float(image.rows);
         cv::Point2f topLeft = tagCorners[0];
         cv::Point2f topRight = tagCorners[1];
         cv::Point2f bottomLeft = tagCorners[2];
@@ -120,7 +120,7 @@ namespace mrover {
         float tagWidth = topRight.x - topLeft.x;
         float tagHeight = bottomLeft.y - topLeft.y;
         ROS_INFO("tag width: %f tag height: %f", tagWidth, tagHeight);
-        
+
         // Metric is the ratio between the tag area and total image area
         float metric = abs(tagWidth * tagHeight) / imageSize;
         // Metric goes from 0 to 1 where 0 means really close and 1 means really far
@@ -131,14 +131,14 @@ namespace mrover {
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
         // TODO: implement me!
-        int xSum = 0;
-        int ySum = 0;
+        float xSum = 0;
+        float ySum = 0;
         // The center is the sum of the x and y coordinates of the corners
-        for (cv::Point2f corner : tagCorners) {
+        for (auto& corner: tagCorners) {
             xSum += corner.x;
             ySum += corner.y;
         }
-        std::pair <float, float> center(xSum, ySum);
+        std::pair<float, float> center(xSum, ySum);
         return center;
     }
 

@@ -23,7 +23,6 @@ class Localization:
         rospy.Subscriber("imu/imu_only", Imu, self.imu_callback)
         rospy.Subscriber("gps/fix", NavSatFix, self.gps_callback)
 
-
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
 
@@ -39,12 +38,10 @@ class Localization:
         """
 
         ref = np.array([(42.293195), (-83.7096706)])
-        point = np.array([(msg.latitude),(msg.longitude)])
+        point = np.array([(msg.latitude), (msg.longitude)])
         cartesian = self.spherical_to_cartesian(point, ref)
-        self.pose = SE3(cartesian, self.pose.rotation)
+        self.pose = SE3.from_pos_quat(cartesian, self.pose.rotation.quaternion)
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
-
-
 
     def imu_callback(self, msg: Imu):
         """
@@ -53,10 +50,10 @@ class Localization:
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
         # TODO
-        self.pose = SE3.from_pos_quat(self.pose.position, np.array([msg.orientation.x, msg.orientation.y,msg.orientation.z,msg.orientation.w]))
-        self.pose.publish_to_tf_tree(self.tf_broadcaster , "map", "base_link")
-
-
+        self.pose = SE3.from_pos_quat(
+            self.pose.position, np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
+        )
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -72,11 +69,14 @@ class Localization:
         """
         # TODO
         r = 6371000
-        x = (r* (np.radians(spherical_coord[1]) - np.radians(reference_coord[1])) * np.cos(np.radians(reference_coord[0])))
+        x = (
+            r
+            * (np.radians(spherical_coord[1]) - np.radians(reference_coord[1]))
+            * np.cos(np.radians(reference_coord[0]))
+        )
         y = r * (np.radians(spherical_coord[0]) - np.radians(reference_coord[0]))
         z = 0
-        return np.array([x,y,z])
-
+        return np.array([x, y, z])
 
 
 def main():
