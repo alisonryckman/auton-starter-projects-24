@@ -43,9 +43,7 @@ class Localization:
             gpsCoords, refCoords
         )  # compute cartesian location using GPS lat/long data
 
-        self.pose = SE3.from_pos_quat(
-            cartesianLoc.copy(), self.pose.rotation.quaternion
-        )  # update pose data with new position readings
+        self.pose = SE3(cartesianLoc.copy(), self.pose.rotation)  # update pose data with new position readings
 
         # publish updated pose data to TF tree
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
@@ -98,7 +96,7 @@ class Localization:
         yBase = R * (long - refLong) * np.cos(np.radians(refLat))
         xBase = R * (lat - refLat)
         # adjust due to heading
-        x = yBase
+        x = -yBase
         y = xBase
         z = 0
         return [x, y, z]

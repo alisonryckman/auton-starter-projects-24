@@ -17,12 +17,7 @@ class Rover:
     ctx: Context
 
     def get_pose(self) -> Optional[SE3]:
-        try:
-            pose = SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
-        except:  # catch exceptions from SE3
-            return None  # if we get an exception, return none (pose doesn't exist)
-        else:  # otherwise, return the SE3 pose
-            return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+        return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
 
     def send_drive_command(self, twist: Twist):
         self.ctx.vel_cmd_publisher.publish(Twist)  # publish the twist using the publisher defined in Context
@@ -50,7 +45,7 @@ class Environment:
         Retrieves the last received message regarding fid pose
         if it exists, otherwise returns None
         """
-        if StarterProjectTag.tagId == -1:  # recall that in perception.cpp,
+        if self.fid_pos.tagId == -1:  # recall that in perception.cpp,
             # we defined an empty tag vector (no tags) as corresponding to a tag id of -1
             return None
         else:  # if the tag id isn't -1, it does exist and we should simply return it

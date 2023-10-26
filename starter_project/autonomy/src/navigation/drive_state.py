@@ -3,6 +3,7 @@ import numpy as np
 from context import Context
 from drive import get_drive_command
 from state import BaseState
+import rospy as rp
 
 
 class DriveState(BaseState):
@@ -15,17 +16,18 @@ class DriveState(BaseState):
     def evaluate(self, ud):
         target = np.array([5.5, 2.0, 0.0])
 
-        roverPose = self.context.rover.get_pose  # get the rover pose
+        roverPose = self.context.rover.get_pose()  # get the rover pose
+
         if roverPose == None:  # if the pose doesn't exist, stay in the drive state
+            rp.loginfo("Pose doesn't exist")
             return "driving_to_point"
+        else:
+            rp.loginfo(roverPose.position[0])
+            # compute new drive command and whether we're at our target
+            driveState = get_drive_command(target, roverPose, 0.7, 0.2)
 
-        # compute new drive command and whether we're at our target
-        driveState = get_drive_command(target, roverPose, 0.7, 0.2)
-
-        if driveState[1] == True:  # go to tag seek state, we've reached our target
-            return "reached_point"
-        else:  # we're not at our target yet, send new drive command to rover and stay in driving state
-            self.context.rover.send_drive_command(driveState[0])
-            return "driving_to_point"
-
-        pass
+            if driveState[1] == True:  # go to tag seek state, we've reached our target
+                return "reached_point"
+            else:  # we're not at our target yet, send new drive command to rover and stay in driving state
+                self.context.rover.send_drive_command(driveState[0])
+                return "driving_to_point"
