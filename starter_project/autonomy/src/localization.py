@@ -68,10 +68,10 @@ class Localization:
         """
         # TODO
         R = 6371000
-        y = R * (
-            np.radians(spherical_coord[1]) - np.radians(reference_coord[1]) * np.cos(np.radians(reference_coord[0]))
+        x = R * (
+            (np.radians(spherical_coord[1]) - np.radians(reference_coord[1])) * np.cos(np.radians(reference_coord[0]))
         )
-        x = R * (np.radians(spherical_coord[0]) - np.radians(reference_coord[0]))
+        y = R * (np.radians(spherical_coord[0]) - np.radians(reference_coord[0]))
         rospy.loginfo("x = %d", x)
         rospy.loginfo("y = %d", y)
         z = 0

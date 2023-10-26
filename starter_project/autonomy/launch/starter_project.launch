@@ -29,20 +29,20 @@
     Perception
     ==========
   -->
-     <!-- <node name="starter_project_perception" pkg="mrover" type="starter_project_perception" /> -->
+     <node name="starter_project_perception" pkg="mrover" type="starter_project_perception" />
 
   <!--
     ===========
     Navigation
     ===========
   -->
-    <!-- <node name="nav" pkg="mrover" type="navigation_starter_project.py" />-->
+    <!-- <node name="nav" pkg="mrover" type="navigation_starter_project.py" /> -->
 
   <!--
     ============
     Localization
     ============
   -->
-  <node name="localization" pkg="mrover" type="localization.py" output="screen" />
+    <node name="localization" pkg="mrover" type="localization.py" output="screen" />
 
 </launch>
