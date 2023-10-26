@@ -37,8 +37,8 @@ class Localization:
         that pose to the TF tree.
         """
 
-        refCoords = [42.293195, -83.7096706]  # reference coordinates for linearization
-        gpsCoords = [msg.latitude, msg.longitude]
+        refCoords = np.array([42.293195, -83.7096706])  # reference coordinates for linearization
+        gpsCoords = np.array([msg.latitude, msg.longitude])
         cartesianLoc = Localization.spherical_to_cartesian(
             gpsCoords, refCoords
         )  # compute cartesian location using GPS lat/long data
@@ -57,12 +57,14 @@ class Localization:
 
         # there may be a cleaner way to do this?
         # create a quaternion rotation vector from the IMU message data (type mismatch with passing msg.orientation directly)
-        rotQuaternion = [
-            msg.orientation.x,
-            msg.orientation.y,
-            msg.orientation.z,
-            msg.orientation.w,
-        ]
+        rotQuaternion = np.array(
+            [
+                msg.orientation.x,
+                msg.orientation.y,
+                msg.orientation.z,
+                msg.orientation.w,
+            ]
+        )
 
         self.pose = SE3.from_pos_quat(
             self.pose.position, rotQuaternion.copy()
@@ -96,10 +98,11 @@ class Localization:
         yBase = R * (long - refLong) * np.cos(np.radians(refLat))
         xBase = R * (lat - refLat)
         # adjust due to heading
-        x = -yBase
+        x = yBase
         y = xBase
         z = 0
-        return [x, y, z]
+
+        return np.array([x, y, z])
 
 
 def main():

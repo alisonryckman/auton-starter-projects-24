@@ -17,6 +17,7 @@ class DriveState(BaseState):
         target = np.array([5.5, 2.0, 0.0])
 
         roverPose = self.context.rover.get_pose()  # get the rover pose
+        tagData = self.context.env.get_fid_data()
 
         if roverPose == None:  # if the pose doesn't exist, stay in the drive state
             rp.loginfo("Pose doesn't exist")
@@ -24,10 +25,14 @@ class DriveState(BaseState):
         else:
             rp.loginfo(roverPose.position[0])
             # compute new drive command and whether we're at our target
-            driveState = get_drive_command(target, roverPose, 0.7, 0.2)
+            driveCmd, status = get_drive_command(target, roverPose, 0.7, 0.2)
 
-            if driveState[1] == True:  # go to tag seek state, we've reached our target
+            if status:  # go to tag seek state, we've reached our target
+                if tagData is not None:
+                    if tagData.tagId != -1:  # log tag data at the state transition point
+                        rp.loginfo(tagData.xTagCenterPixel)
+                        rp.loginfo(tagData.yTagCenterPixel)
                 return "reached_point"
             else:  # we're not at our target yet, send new drive command to rover and stay in driving state
-                self.context.rover.send_drive_command(driveState[0])
+                self.context.rover.send_drive_command(driveCmd)
                 return "driving_to_point"

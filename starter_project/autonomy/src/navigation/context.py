@@ -17,10 +17,13 @@ class Rover:
     ctx: Context
 
     def get_pose(self) -> Optional[SE3]:
-        return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+        try:
+            return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+        except:
+            return None
 
     def send_drive_command(self, twist: Twist):
-        self.ctx.vel_cmd_publisher.publish(Twist)  # publish the twist using the publisher defined in Context
+        self.ctx.vel_cmd_publisher.publish(twist)  # publish the twist using the publisher defined in Context
 
     def send_drive_stop(self):
         stopTwist = Twist()  # initializes to zero; could also do this directly in the send drive statement
@@ -38,18 +41,17 @@ class Environment:
     fid_pos: Optional[StarterProjectTag]
 
     def receive_fid_data(self, message: StarterProjectTag):
-        self.fid_pos = StarterProjectTag
+        self.fid_pos = message
 
     def get_fid_data(self) -> Optional[StarterProjectTag]:
         """
         Retrieves the last received message regarding fid pose
         if it exists, otherwise returns None
         """
-        if self.fid_pos.tagId == -1:  # recall that in perception.cpp,
-            # we defined an empty tag vector (no tags) as corresponding to a tag id of -1
-            return None
-        else:  # if the tag id isn't -1, it does exist and we should simply return it
+        if self.fid_pos:  # recall that in perception.cpp,
             return self.fid_pos
+        else:  # if the tag id isn't -1, it does exist and we should simply return it
+            return None
 
 
 class Context:

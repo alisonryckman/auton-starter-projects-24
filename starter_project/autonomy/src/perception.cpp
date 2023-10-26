@@ -28,7 +28,7 @@ namespace mrover {
 
         // Create a publisher for our tag topic
         // See: http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29
-        mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("tag", 1);
+        mTagPublisher = mNodeHandle.advertise<StarterProjectTag>("/tag", 1);
 
         mTagDetectorParams = cv::aruco::DetectorParameters::create();
         mTagDictionary = cv::aruco::getPredefinedDictionary(0);
@@ -118,7 +118,7 @@ namespace mrover {
         // it's not strictly necessary
         float closeness = tagArea / imArea;
 
-        return closeness;
+        return 1 - closeness;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) { // NOLINT(*-convert-member-functions-to-static)
