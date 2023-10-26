@@ -63,7 +63,6 @@ namespace mrover {
 
         // Populate tag then push to tags using for loop, loop through one tag at a time
 
-
         for (int i = 0; i < mTagIds.size(); i++) {
 
             StarterProjectTag tag;
@@ -72,15 +71,15 @@ namespace mrover {
 
             // Change pair into reference from middle
 
-            tagCenter.first = (float(image.cols / 2.0) - tagCenter.first);
+            tagCenter.first = (tagCenter.first - float(image.cols / 2.0));
 
-            tagCenter.second = (float(image.cols / 2.0) - tagCenter.second);
+            tagCenter.second = (tagCenter.second) - float(image.cols / 2.0);
 
             tag.tagId = mTagIds[i];
 
-            tag.xTagCenterPixel = tagCenter.first;
+            tag.xTagCenterPixel = tagCenter.first / float(image.cols);
 
-            tag.yTagCenterPixel = tagCenter.second;
+            tag.yTagCenterPixel = tagCenter.second / float(image.rows);
 
             tag.closenessMetric = getClosenessMetricFromTagCorners(image, mTagCorners[i]);
 
@@ -101,18 +100,30 @@ namespace mrover {
 
         float minDist = 10000.0;
 
-        for (int j = 0; j < tags.size(); j++) {
-            float tagDist = sqrt(float(pow((tags[j].xTagCenterPixel), 2) - pow(tags[j].yTagCenterPixel, 2)));
-
-            if (tagDist < minDist) {
-                minDist = tagDist;
-                selectedIndex = j;
+        if (!tags.empty()) {
+            if (tags.size() == 1) {
+                return tags[0];
             }
+
+            for (int j = 0; j < tags.size(); j++) {
+                float tagDist = sqrt(float(pow((tags[j].xTagCenterPixel), 2) - pow(tags[j].yTagCenterPixel, 2)));
+
+                if (tagDist < minDist) {
+                    minDist = tagDist;
+                    selectedIndex = j;
+                }
+            }
+
+            StarterProjectTag selectedTag = tags[selectedIndex];
+
+            return {selectedTag};
         }
 
-        StarterProjectTag selectedTag = tags[selectedIndex];
-
-        return {selectedTag};
+        else {
+            StarterProjectTag tag;
+            tag.tagId = -1;
+            return tag;
+        }
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
@@ -136,7 +147,7 @@ namespace mrover {
 
         // Get output from getCenterFromTagCorners
 
-        float closenessMetric = 1 - (diff_x * diff_y / float(image.cols * image.rows));
+        float closenessMetric = 1 - abs(diff_x * diff_y / float(image.cols * image.rows));
 
         // between 0 and 1
 

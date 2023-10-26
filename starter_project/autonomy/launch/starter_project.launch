@@ -50,13 +50,12 @@
     ===========
   -->
   <!-- <node
-    name="nav" pkg="mrover" type="navigation_starter_project.py" /> -->
+    name="nav" pkg="mrover" type="navigation_starter_project.py" />
 
-  <!--
     ============
     Localization
     ============
-  -->
+   -->
   <node
     name="localization" pkg="mrover" type="localization.py" output="screen" />
 

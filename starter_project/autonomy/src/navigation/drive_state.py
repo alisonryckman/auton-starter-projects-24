@@ -10,10 +10,7 @@ class DriveState(BaseState):
         super().__init__(
             context,
             # TODO:
-            add_outcomes=[
-                "driving_to_point",
-                "reached_point",
-            ],
+            add_outcomes=["driving_to_point", "reached_point"],
         )
 
     def evaluate(self, ud):
@@ -38,7 +35,7 @@ class DriveState(BaseState):
 
         # TODO: send the drive command to the rover
 
-        Context.rover.send_drive_command(cmd)
+        self.context.rover.send_drive_command(cmd)
 
         # TODO: tell smach to stay in the DriveState by returning with outcome "driving_to_point"
 

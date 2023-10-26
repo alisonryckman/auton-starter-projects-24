@@ -38,11 +38,13 @@ class Localization:
         """
         # TODO
 
-        self.pose = self.spherical_to_cartesian(
-            np.ndarray([msg.latitude, msg.longitude]), np.ndarray([42.293195, -83.7096706])
+        linearized_coordinates = self.spherical_to_cartesian(
+            np.array([msg.latitude, msg.longitude]), np.array([42.293195, -83.7096706])
         )
 
-        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
+        self.pose = SE3(linearized_coordinates, self.pose.rotation)
+
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     def imu_callback(self, msg: Imu):
         """
@@ -52,9 +54,11 @@ class Localization:
         """
         # TODO
 
-        self.pose = SE3.from_pos_quat(self.pose.position, msg.orientation)
+        self.pose = SE3.from_pos_quat(
+            self.pose.position, np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
+        )
 
-        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -84,7 +88,7 @@ class Localization:
 
         # switch y and x
 
-        return np.ndarray([y, x, z])
+        return np.array([y, x, z])
 
         #  refLat = 42.293195
         # refLon = -83.7096706

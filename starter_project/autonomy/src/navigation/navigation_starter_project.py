@@ -33,7 +33,7 @@ class Navigation(threading.Thread):
             self.state_machine.add(
                 "DriveState",
                 DriveState(self.context),
-                transitions={"drive": "DriveState"},
+                transitions={"driving_to_point": "DriveState", "reached_point": "TagSeekState"},
             )
             # DoneState and its transitions
             self.state_machine.add(
@@ -45,7 +45,7 @@ class Navigation(threading.Thread):
             self.state_machine.add(
                 "TagSeekState",
                 TagSeekState(self.context),
-                transitions={"working": "TagSeekState"},
+                transitions={"working": "TagSeekState", "success": "DoneState", "failure": "DoneState"},
             )
 
     def run(self):
@@ -62,6 +62,7 @@ class Navigation(threading.Thread):
 
 def main():
     # TODO: init a node called "navigation"
+    rospy.init_node("navigation")
 
     # context and navigation objects
     context = Context()
