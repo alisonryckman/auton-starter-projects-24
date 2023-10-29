@@ -8,23 +8,27 @@ class TagSeekState(BaseState):
     def __init__(self, context: Context):
         super().__init__(
             context,
-            # TODO: add outcomes
-            add_outcomes=["TODO: add outcomes here"],
+            add_outcomes=["failure", "working", "success"],
         )
 
     def evaluate(self, ud):
         DISTANCE_TOLERANCE = 0.99
         ANUGLAR_TOLERANCE = 0.3
-        # TODO: get the tag's location and properties (HINT: use get_fid_data() from context.env)
 
-        # TODO: if we don't have a tag: go to the DoneState (with outcome "failure")
+        tag = self.context.env.get_fid_data
 
-        # TODO: if we are within angular and distance tolerances: go to DoneState (with outcome "success")
+        if tag is None:
+            return "failure"
 
-        # TODO: figure out the Twist command to be applied to move the rover closer to the tag
+        if tag.closenessMetric < DISTANCE_TOLERANCE and abs(tag.xTagCenterPixel) < ANUGLAR_TOLERANCE:
+            return "success"
 
-        # TODO: send Twist command to rover
+        twist = Twist()
+        if tag.closenessMetric >= DISTANCE_TOLERANCE:
+            twist.linear.x = 1
+        if abs(tag.xTagCenterPixel) >= ANUGLAR_TOLERANCE:
+            twist.angular.z = tag.xTagCenterPixel
+        
+        self.context.rover.send_drive_command(twist)
 
-        # TODO: stay in the TagSeekState (with outcome "working")
-
-        pass
+        return "working"
